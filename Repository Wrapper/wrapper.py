@@ -1,12 +1,18 @@
 import os
 import time
-
-from datetime import datetime, timedelta
-from functools import wraps
+import string
+import random
 import tempfile
+
 import multiprocessing as mp
 import pandas as pd
 import numpy as np
+
+from datetime import datetime, timedelta
+from functools import wraps
+from copy import deepcopy
+
+from wrapper_utils import ObjectWrapper
 
 #multiprocessing arrays get generated automatically by script when functionality added HERE
 # log_array = multiprocessing.Array
@@ -20,7 +26,6 @@ log_dict = dict()
 
 #Multiprocessing-safe:
 log_mparray = None
-
 
 def tmpfile_timer(path : str, process=False):
     '''
@@ -81,7 +86,7 @@ def tmpfile_timer(path : str, process=False):
         
     return outer
 
-def tmpfile_monitor(path : str, f=[], process=False):
+def func_isolator(path : str, func_name : str, process=False):
     '''
     Wrapper function for analysing the speed of functions.
     Accuracy decreases over execution time and in functions with many function calls inside, but should still remain relatively accurate.
@@ -95,18 +100,34 @@ def tmpfile_monitor(path : str, f=[], process=False):
     def outer(fn):
         @wraps(fn)
         def inner(*args, **kwargs):
+            arg_str = [str(ObjectWrapper(arg) for arg in args])
+            kwarg_str = [str(ObjectWrapper(kwarg) for kwarg in kwargs])
             
-            if fn.__name__ in watch_funcs:
-                args = args
-                kwargs = kwargs
-                
             response = fn(*args, **kwargs)
+            
+            res_str = str(ObjectWrapper(response))
 
-            with open(path, 'a+'):
-                file.write(f'{fn.__module__},{fn.__name__},{args},{kwargs},{datetime.timestamp(datetime.now())}\n')
+            if fn.__name__ == func_name:
+                uid = ''.join(random.choices(string.ascii_letters + string.digits, k=20))
+                with open(f'func_call_{uid}.pkl', 'wb') as file:
+                    pickle.dump((args, kwargs, deepcopy(response)), file)
+                    
+                with open(path, 'a+'):
+                    file.write(f'{datetime.timestamp(datetime.now())},{uid},{fn.__module__},{argstr}{kwargstr}{resp}\n')
 
-            # if process:
-            #     df = pd.DataFrame(columns=['Module', 'Function', 'Arguments', 'Keyword Arguments', 'Return Value', 'Execution ID', 'Timestamp'])
+            if process:
+                with open(path, 'r') as file:
+                    text = file.read()
+
+                data = []
+                for i, line in text.split('\n'):
+                    datum = []
+                    for val in line.split(','):
+                        val.replace(';',',')
+                        datum.append(val)
+                    data.append(datum)
+
+                df = pd.DataFrame(data, columns=['CALL ID', 'UID','Module', 'Arguments', 'Keyword Arguments', 'Return Value'])
             
             return response
             

@@ -30,12 +30,13 @@ def copy_respository(path : str) -> None:
     Args:
         path (str): The absolute folder path of the source folder. 
     '''
-    copy_path = os.path.abspath(path) + '_copy'
+    norm_path = os.path.normpath(path)
+    copy_path = os.path.abspath(norm_path) + '_copy'
     os.makedirs(copy_path,exist_ok=True)
     
-    files, folders = grab_file_and_folders(path)
+    files, folders = grab_file_and_folders(norm_path)
 
-    folders = [os.path.abspath(path)+'_copy'+folder[folder.find(path)+len(path):] for folder in folders]
+    folders = [os.path.abspath(path).rstrip('\\')+'_copy'+folder[folder.find(path)+len(path):] for folder in folders]
     dest_files = [os.path.join(os.path.abspath(path).rstrip('\\')+'_copy',file[file.find(path)+len(path):].lstrip('\\')) for file in files]
 
     for folder in folders:

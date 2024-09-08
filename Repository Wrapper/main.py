@@ -17,6 +17,7 @@ parser.add_argument('wrapper_func', default='', type=str, help='Name of the wrap
 
 #optional arguments
 parser.add_argument('-ws','--wrapper_script', default='wrapper.py', type=str, help='Name of the script containing the wrappers placed inside this folder in the repository.')
+parser.add_argument('-wu','--wrapper_utils', default='wrapper_utils.py', type=str, help='Name of the script containing the wrapper utilities inside this folder in the repository.')
 parser.add_argument('-wa','--wrapper_arguments', default='', type=str, help='String containing the exact arguments inside the brackets of the wrapper to be used everywhere.')
 parser.add_argument('-obj','--objects', default='', type=str, help='String defining the objects as if writing in code to be ')
 parser.add_argument('-c','--composite', default=False, type=bool, help='Boolean flag whether to analyse almost every line of code instead of every function only.')
@@ -58,6 +59,7 @@ def main():
 
     #we copy the wrapper script into the copied repo
     copy_file(os.path.abspath(args.wrapper_script), os.path.join(copy_path, args.wrapper_script))
+    copy_file(os.path.abspath(args.wrapper_utils), os.path.join(copy_path, args.wrapper_utils))
 
     #we wrap and add imports in every python script in the repository
     s_wrappers = [
