@@ -1,0 +1,7 @@
+-have human like variation in mouse positioning (small variance in human esque pattern, maybe test yourself how your mouse click var is like)
+-have human like mouse dragging behavior too
+-make all human mimicry features a toggle on off
+-enable memory hooking or disable it
+-enable random pause patterns and mimic human gamer (session concept)
+-session concept: intense vs relaxed, long vs short (these enable pauses to look more human like for example and afk-ing)
+-if there are requests involved, have a rate limiter maybe

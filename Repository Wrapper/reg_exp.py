@@ -97,7 +97,6 @@ class ScriptWrapper:
         self.add_wrapper()
         if not self.verify_wrapping():
             print('\nRemember to check these lines for possible errors of this script!!!\n')
-        self.order_wrappers()
 
         if self.main_arg != "" and self.is_main_candidate():
             self.process_main_function()

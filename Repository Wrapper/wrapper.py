@@ -12,13 +12,13 @@ from datetime import datetime, timedelta
 from functools import wraps
 from copy import deepcopy
 
-from wrapper_utils import ObjectWrapper
+# from wrapper_utils import ObjectWrapper
 
 #multiprocessing arrays get generated automatically by script when functionality added HERE
 # log_array = multiprocessing.Array
 
 #Objects which may be imported as shared data structures
-tmp_path = os.path.join(tempfile.gettempdir(),f'tmpfile_RepositoryWrapper_log.tmp')
+tmp_path = os.path.join(tempfile.gettempdir(), f'tmpfile_RepositoryWrapper_log.tmp')
 
 #Multiprocessing unsafe:
 log_list = []
@@ -41,10 +41,14 @@ def tmpfile_timer(path : str, process=False):
     def outer(fn):
         @wraps(fn)
         def inner(*args, **kwargs):
+            if os.path.exists(path) and process:
+                with open(path, 'w') as file:
+                    file.write('')
+                    
             start_time = time.time_ns()
             response = fn(*args, **kwargs)
             end_time = time.time_ns()
-
+                    
             with open(path, 'a+') as file:
                 file.write(f'{fn.__module__},{fn.__name__},{end_time - start_time}\n')
 
@@ -86,51 +90,51 @@ def tmpfile_timer(path : str, process=False):
         
     return outer
 
-def func_isolator(path : str, func_name : str, process=False):
-    '''
-    Wrapper function for analysing the speed of functions.
-    Accuracy decreases over execution time and in functions with many function calls inside, but should still remain relatively accurate.
-    Uses temporary files to collect data during function execution.
+# def func_isolator(path : str, func_name : str, process=False):
+#     '''
+#     Wrapper function for analysing the speed of functions.
+#     Accuracy decreases over execution time and in functions with many function calls inside, but should still remain relatively accurate.
+#     Uses temporary files to collect data during function execution.
 
-    param:
-        path (str): The path to the location where the temorary file is to be created.
-        process (bool): Whether to process the entire data into a dataframe once the execution is over, default behavior of this script enables this when running a function called main.
-    '''
+#     param:
+#         path (str): The path to the location where the temorary file is to be created.
+#         process (bool): Whether to process the entire data into a dataframe once the execution is over, default behavior of this script enables this when running a function called main.
+#     '''
             
-    def outer(fn):
-        @wraps(fn)
-        def inner(*args, **kwargs):
-            arg_str = [str(ObjectWrapper(arg) for arg in args])
-            kwarg_str = [str(ObjectWrapper(kwarg) for kwarg in kwargs])
+#     def outer(fn):
+#         @wraps(fn)
+#         def inner(*args, **kwargs):
+#             arg_str = [str(ObjectWrapper(arg) for arg in args])
+#             kwarg_str = [str(ObjectWrapper(kwarg) for kwarg in kwargs])
             
-            response = fn(*args, **kwargs)
+#             response = fn(*args, **kwargs)
             
-            res_str = str(ObjectWrapper(response))
+#             res_str = str(ObjectWrapper(response))
 
-            if fn.__name__ == func_name:
-                uid = ''.join(random.choices(string.ascii_letters + string.digits, k=20))
-                with open(f'func_call_{uid}.pkl', 'wb') as file:
-                    pickle.dump((args, kwargs, deepcopy(response)), file)
+#             if fn.__name__ == func_name:
+#                 uid = ''.join(random.choices(string.ascii_letters + string.digits, k=20))
+#                 with open(f'func_call_{uid}.pkl', 'wb') as file:
+#                     pickle.dump((args, kwargs, deepcopy(response)), file)
                     
-                with open(path, 'a+'):
-                    file.write(f'{datetime.timestamp(datetime.now())},{uid},{fn.__module__},{argstr}{kwargstr}{resp}\n')
+#                 with open(path, 'a+'):
+#                     file.write(f'{datetime.timestamp(datetime.now())},{uid},{fn.__module__},{argstr}{kwargstr}{resp}\n')
 
-            if process:
-                with open(path, 'r') as file:
-                    text = file.read()
+#             if process:
+#                 with open(path, 'r') as file:
+#                     text = file.read()
 
-                data = []
-                for i, line in text.split('\n'):
-                    datum = []
-                    for val in line.split(','):
-                        val.replace(';',',')
-                        datum.append(val)
-                    data.append(datum)
+#                 data = []
+#                 for i, line in text.split('\n'):
+#                     datum = []
+#                     for val in line.split(','):
+#                         val.replace(';',',')
+#                         datum.append(val)
+#                     data.append(datum)
 
-                df = pd.DataFrame(data, columns=['CALL ID', 'UID','Module', 'Arguments', 'Keyword Arguments', 'Return Value'])
+#                 df = pd.DataFrame(data, columns=['CALL ID', 'UID','Module', 'Arguments', 'Keyword Arguments', 'Return Value'])
             
-            return response
+#             return response
             
-        return inner
+#         return inner
         
-    return outer
+#     return outer

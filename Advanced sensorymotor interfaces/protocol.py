@@ -1,0 +1,2 @@
+class HandleProtocol:
+    pass
